@@ -12,13 +12,14 @@ public class App {
 
         try {
             // Step 1: Get URL
+            String method = getHttpMethod();
             String url = getUserUrl();
 
             // Step 2: Create HTTP Client
             HttpClient client = createClient();
 
             // Step 3: Create Request
-            HttpRequest request = createRequest(url);
+            HttpRequest request = createRequest(url,method);
 
             // Step 4: Send Request
             HttpResponse<String> response = sendRequest(client, request);
@@ -48,14 +49,26 @@ public class App {
     }
 
     // Create HTTP Request
-    public static HttpRequest createRequest(String url) {
+public static HttpRequest createRequest(String url, String method) {
 
-        return HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
+    HttpRequest.Builder builder = HttpRequest.newBuilder()
+            .uri(URI.create(url));
+
+    if (method.equals("GET")) {
+
+        return builder.GET().build();
+
+    } else if (method.equals("DELETE")) {
+
+        return builder.DELETE().build();
+
+    } else {
+
+        System.out.println(method + " will be implemented later.");
+        return builder.GET().build();
     }
-
+}
+   
     // Send HTTP Request
     public static HttpResponse<String> sendRequest(
             HttpClient client,
@@ -79,4 +92,37 @@ public class App {
         System.out.println("Something went wrong!");
         e.printStackTrace();
     }
+    public static String getHttpMethod() {
+
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.println("Choose HTTP Method:");
+    System.out.println("1. GET");
+    System.out.println("2. POST");
+    System.out.println("3. PUT");
+    System.out.println("4. DELETE");
+
+    System.out.print("Enter choice: ");
+
+    int choice = scanner.nextInt();
+
+    switch (choice) {
+
+        case 1:
+            return "GET";
+
+        case 2:
+            return "POST";
+
+        case 3:
+            return "PUT";
+
+        case 4:
+            return "DELETE";
+
+        default:
+            System.out.println("Invalid choice. Using GET.");
+            return "GET";
+    }
+}
 }
