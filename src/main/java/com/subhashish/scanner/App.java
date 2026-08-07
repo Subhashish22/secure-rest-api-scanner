@@ -10,38 +10,55 @@ public class App {
 
     public static void main(String[] args) {
 
-        try {
+    try {
 
-            // Step 1: Get HTTP Method
-            String method = getHttpMethod();
+        // Step 1: Get HTTP Method
+        String method = getHttpMethod();
 
-            // Step 2: Get URL
-            String url = getUserUrl();
+        // Step 2: Get URL
+        String url = getUserUrl();
 
-            // Step 3: Get JSON Body (Only for POST and PUT)
-            String requestBody = "";
+        // Step 3: Get JSON Body (Only for POST and PUT)
+        String requestBody = "";
 
-            if (method.equals("POST") || method.equals("PUT")) {
-                requestBody = getRequestBody();
-            }
-
-            // Step 4: Create HTTP Client
-            HttpClient client = createClient();
-
-            // Step 5: Create HTTP Request
-            HttpRequest request = createRequest(url, method, requestBody);
-
-            // Step 6: Send HTTP Request
-            HttpResponse<String> response = sendRequest(client, request);
-
-            // Step 7: Print Response
-            printResponse(response);
-
-        } catch (Exception e) {
-            handleError(e);
+        if (method.equals("POST") || method.equals("PUT")) {
+            requestBody = getRequestBody();
         }
-    }
 
+        // Step 4: Create HTTP Client
+        HttpClient client = createClient();
+
+        // Step 5: Create HTTP Request
+        HttpRequest request = createRequest(url, method, requestBody);
+
+        // Start Timer
+        long startTime = System.currentTimeMillis();
+
+        // Step 6: Send HTTP Request
+        HttpResponse<String> response = sendRequest(client, request);
+
+        // Stop Timer
+        long endTime = System.currentTimeMillis();
+
+        // Calculate Response Time
+        long responseTime = endTime - startTime;
+
+        // Step 7: Print Response
+        printResponse(response, responseTime);
+
+        // Step 8: Check HTTPS
+        checkHttps(url);
+
+        // Step 9: Check Security Headers
+        checkSecurityHeaders(response);
+
+        // Step 10: Print Security Report
+printSecurityReport(response, url, responseTime);
+
+    } catch (Exception e) {
+        handleError(e);
+    }
+}
     // Get URL from user
     public static String getUserUrl() {
 
@@ -109,14 +126,85 @@ public class App {
     }
 
     // Print Response
-    public static void printResponse(HttpResponse<String> response) {
+public static void printResponse(HttpResponse<String> response,long responseTime) {
 
-        System.out.println("\n========== RESPONSE ==========");
-        System.out.println("Status Code : " + response.statusCode());
-        System.out.println();
-        System.out.println(response.body());
+    System.out.println("\n========== RESPONSE ==========");
+
+    System.out.println("Status Code : " + response.statusCode());
+    System.out.println("Response Time : " + responseTime + " ms");
+
+    System.out.println("\n========== HEADERS ==========");
+
+    response.headers().map().forEach((key, value) -> {
+        System.out.println(key + " : " + value);
+    });
+
+    System.out.println("\n========== BODY ==========");
+
+    System.out.println(response.body());
+
+}
+// Check HTTPS
+public static void checkHttps(String url) {
+
+    System.out.println("\n========== HTTPS ==========");
+
+    if (url.startsWith("https://")) {
+        System.out.println("HTTPS : YES ✅");
+    } else {
+        System.out.println("HTTPS : NO ❌");
+    }
+}
+// Check Security Headers
+public static void checkSecurityHeaders(HttpResponse<String> response) {
+
+    System.out.println("\n========== SECURITY HEADERS ==========");
+
+    checkHeader(response, "x-content-type-options");
+
+    checkHeader(response, "x-frame-options");
+
+    checkHeader(response, "content-security-policy");
+
+    checkHeader(response, "strict-transport-security");
+}
+
+    // Print Security Report
+public static void printSecurityReport(HttpResponse<String> response,
+                                       String url,
+                                       long responseTime) {
+
+    System.out.println("\n==============================");
+    System.out.println("      SECURITY REPORT");
+    System.out.println("==============================");
+
+    if (url.startsWith("https://")) {
+
+        System.out.println("HTTPS          : YES ✅");
+
+    } else {
+
+        System.out.println("HTTPS          : NO ❌");
     }
 
+    System.out.println("Status Code    : " + response.statusCode());
+
+    System.out.println("Response Time  : " + responseTime + " ms");
+
+}
+
+// Check Single Header
+public static void checkHeader(HttpResponse<String> response, String header) {
+
+    if (response.headers().firstValue(header).isPresent()) {
+
+        System.out.println(header + " : YES ✅");
+
+    } else {
+
+        System.out.println(header + " : NO ❌");
+    }
+}
     // Handle Errors
     public static void handleError(Exception e) {
 
